@@ -58,3 +58,20 @@ class Database:
     def close(self):
         """Закрытие соединения с базой данных"""
         self.conn.close()
+
+    def save_bet(self, chat_id, amount, coefficient, result):
+        """Сохранение ставки в базу данных"""
+        self.cursor.execute('''
+            CREATE TABLE IF NOT EXISTS bets (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                chat_id INTEGER,
+                amount INTEGER,
+                coefficient REAL,
+                result TEXT
+            )
+        ''')
+        self.cursor.execute(
+            "INSERT INTO bets (chat_id, amount, coefficient, result) VALUES (?, ?, ?, ?)",
+            (chat_id, amount, coefficient, result)
+        )
+        self.conn.commit()

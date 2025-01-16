@@ -22,6 +22,7 @@ def get_users():
     users = db.cursor.execute("SELECT * FROM users").fetchall()
     return jsonify(users)
 
+
 # Добавление пользователя в базу данных через Flask
 @app.route('/add_user', methods=['POST'])
 def add_user():
