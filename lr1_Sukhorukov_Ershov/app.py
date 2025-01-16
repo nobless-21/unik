@@ -9,7 +9,11 @@ db = Database()
 # Главная страница
 @app.route('/')
 def index():
-    return render_template('index.html', message="Привет, это Flask + Telegram Bot!")
+    # Получение всех пользователей из базы данных
+    users = db.cursor.execute("SELECT * FROM users").fetchall()
+    # Получение всех ставок из таблицы bets
+    bets = db.cursor.execute("SELECT * FROM bets").fetchall()
+    return render_template('index.html', users=users, bets=bets, message="This project was build by Sukhorukov, Ershov")
 
 # Пример API для получения статуса бота
 @app.route('/status')
@@ -22,6 +26,11 @@ def get_users():
     users = db.cursor.execute("SELECT * FROM users").fetchall()
     return jsonify(users)
 
+# Получение всех ставок из базы данных
+@app.route('/bets', methods=['GET'])
+def get_bets():
+    bets = db.cursor.execute("SELECT * FROM bets").fetchall()
+    return jsonify(bets)
 
 # Добавление пользователя в базу данных через Flask
 @app.route('/add_user', methods=['POST'])

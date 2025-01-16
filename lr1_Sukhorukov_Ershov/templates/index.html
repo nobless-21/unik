@@ -4,6 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flask + Telegram Bot</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        h2 {
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
     <h1>{{ message }}</h1>
@@ -11,6 +28,57 @@
     <ul>
         <li><a href="/status">/status</a> - Статус приложения</li>
         <li><a href="/users">/users</a> - Список пользователей</li>
+        <li><a href="/bets">/bets</a> - Ставки</li>
     </ul>
+
+    <!-- Таблица пользователей -->
+    <h2>Список пользователей:</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Chat ID</th>
+                <th>Username</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+                <tr>
+                    <td>{{ user[0] }}</td>
+                    <td>{{ user[1] }}</td>
+                    <td>{{ user[2] }}</td>
+                    <td>{{ user[3] }}</td>
+                    <td>{{ user[4] }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Таблица ставок -->
+    <h2>Ставки:</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>User ID</th>
+                <th>Amount</th>
+                <th>Date</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for bet in bets %}
+                <tr>
+                    <td>{{ bet[0] }}</td>
+                    <td>{{ bet[1] }}</td>
+                    <td>{{ bet[2] }}</td>
+                    <td>{{ bet[3] }}</td>
+                    <td>{{ bet[4] }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </body>
 </html>
