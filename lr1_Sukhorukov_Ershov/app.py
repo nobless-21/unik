@@ -35,14 +35,16 @@ def get_bets():
 # Добавление пользователя в базу данных через Flask
 @app.route('/add_user', methods=['POST'])
 def add_user():
-    data = request.json
+    data = request.form
     chat_id = data.get('chat_id')
     username = data.get('username')
     first_name = data.get('first_name')
     last_name = data.get('last_name')
 
-    db.save_user(chat_id, username, first_name, last_name)
-    return jsonify({"message": "Пользователь добавлен"})
+    if chat_id and username:
+        db.save_user(chat_id, username, first_name, last_name)
+        return redirect(url_for('get_users'))
+    return redirect(url_for('get_users'))  # Перенаправляем обратно, если данные неверные
 
 # Обновление баланса пользователя
 @app.route('/update_balance/<int:user_id>', methods=['POST'])
@@ -53,6 +55,13 @@ def update_balance(user_id):
         db.conn.commit()
         return redirect(url_for('get_users'))  # После обновления баланса перенаправляем обратно на страницу пользователей
     return redirect(url_for('get_users'))  # В случае ошибки также возвращаемся на страницу пользователей
+
+# Удаление пользователя
+@app.route('/delete_user/<int:user_id>', methods=['POST'])
+def delete_user(user_id):
+    db.cursor.execute("DELETE FROM users WHERE id = ?", (user_id,))
+    db.conn.commit()
+    return redirect(url_for('get_users'))  # После удаления перенаправляем на страницу пользователей
 
 # Запуск Flask-приложения
 def start_flask():

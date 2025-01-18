@@ -5,30 +5,105 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flask + Telegram Bot</title>
     <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
+        /* Основные стили страницы */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
         }
-        table, th, td {
-            border: 1px solid black;
+
+        /* Заголовок */
+        h1 {
+            text-align: center;
+            font-size: 40px;
+            color: #000000;
+            margin-top: 50px;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
         }
-        th, td {
-            padding: 8px;
-            text-align: left;
-        }
+
         h2 {
+            font-size: 30px;
+            color: #333;
             margin-top: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        /* Стили для списка маршрутов */
+        ul {
+            list-style-type: none;
+            padding: 0;
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        li {
+            font-size: 18px;
+            margin: 10px 0;
+        }
+
+        /* Ссылки */
+        a {
+            color: #007BFF;
+            text-decoration: none;
+            font-weight: bold;
+            padding: 5px 15px;
+            background-color: #f0f8ff;
+            border-radius: 4px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        a:hover {
+            background-color: #007BFF;
+            color: white;
+            text-decoration: underline;
+        }
+
+        /* Контейнер для контента */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 30px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Добавление responsive дизайна для мобильных устройств */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 30px;
+            }
+
+            h2 {
+                font-size: 24px;
+            }
+
+            ul {
+                margin-top: 20px;
+            }
+
+            li {
+                font-size: 16px;
+            }
+
+            a {
+                font-size: 16px;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>{{ message }}</h1>
-    <h2>Доступные маршруты:</h2>
-    <ul>
-        <li><a href="/status">/status</a> - Статус приложения</li>
-        <li><a href="/users">/users</a> - Список пользователей</li>
-        <li><a href="/bets">/bets</a> - Ставки</li>
-    </ul>
+    <div class="container">
+        <h1>{{ message }}</h1>
+        <h2>Доступные маршруты:</h2>
+        <ul>
+            <li><a href="/status">/status</a> - Статус приложения</li>
+            <li><a href="/users">/users</a> - Список пользователей</li>
+            <li><a href="/bets">/bets</a> - Ставки</li>
+        </ul>
+    </div>
 </body>
 </html>

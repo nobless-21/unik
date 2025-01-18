@@ -20,6 +20,20 @@
         h2 {
             margin-top: 20px;
         }
+
+        .back-button {
+            display: inline-block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #ff4d4d;  /* Красный цвет */
+            color: white;
+            text-align: center;
+            border-radius: 4px;
+            text-decoration: none;
+        }
+        .back-button:hover {
+            background-color: #e60000;  /* Темно-красный цвет при наведении */
+        }
     </style>
 </head>
 <body>
@@ -46,6 +60,9 @@
             {% endfor %}
         </tbody>
     </table>
-    <a href="/">Назад на главную</a>
+
+    <!-- Красная кнопка "Вернуться назад" -->
+    <a href="/" class="back-button">Вернуться назад</a>
+
 </body>
 </html>

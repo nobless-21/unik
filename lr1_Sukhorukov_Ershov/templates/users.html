@@ -3,62 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Список пользователей</title>
+    <title>Users</title>
     <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        table, th, td {
-            border: 1px solid black;
-        }
-        th, td {
-            padding: 8px;
-            text-align: left;
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
         }
         h2 {
+            text-align: center;
             margin-top: 20px;
         }
-        .form-container {
-            margin-top: 20px;
+        form {
+            margin: 20px auto;
+            width: 50%;
             text-align: center;
+        }
+        input[type="text"], input[type="number"], input[type="submit"], button {
+            padding: 8px;
+            margin: 10px;
+            width: 80%;
+            max-width: 400px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background-color: #fff;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        button {
+            cursor: pointer;
+            background-color: #ff4d4d;
+            color: white;
+            border: none;
+        }
+        button:hover {
+            background-color: #e60000;
+        }
+        .back-button {
+            display: inline-block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #ff4d4d;  /* Красный цвет */
+            color: white;
+            text-align: center;
+            border-radius: 4px;
+            text-decoration: none;
+        }
+        .back-button:hover {
+            background-color: #e60000;  /* Темно-красный цвет при наведении */
         }
     </style>
 </head>
 <body>
-    <h1>Список пользователей</h1>
-    <table>
-        <thead>
+
+<h2>Список пользователей</h2>
+
+<!-- Форма для добавления нового пользователя -->
+<form method="POST" action="/add_user">
+    <input type="number" name="chat_id" required placeholder="Chat ID">
+    <input type="text" name="username" required placeholder="Username">
+    <input type="text" name="first_name" placeholder="First Name">
+    <input type="text" name="last_name" placeholder="Last Name">
+    <input type="submit" value="Добавить пользователя">
+</form>
+
+<!-- Кнопка вернуться назад -->
+<a href="/" class="back-button">Вернуться назад</a>
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Chat ID</th>
+            <th>Username</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Balance</th>
+            <th>Update Balance</th>
+            <th>Delete User</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
             <tr>
-                <th>ID</th>
-                <th>Chat ID</th>
-                <th>Username</th>
-                <th>First Name</th>
-                <th>Last Name</th>
-                <th>Balance</th>
-                <th>Change Balance</th>
+                <td>{{ user[0] }}</td>
+                <td>{{ user[1] }}</td>
+                <td>{{ user[2] }}</td>
+                <td>{{ user[3] }}</td>
+                <td>{{ user[4] }}</td>
+                <td>{{ user[5] }}</td> <!-- Баланс -->
+                <td>
+                    <form method="POST" action="/update_balance/{{ user[0] }}">
+                        <input type="number" name="new_balance" step="0.01" required placeholder="Новая сумма" value="{{ user[5] }}">
+                        <input type="submit" value="Обновить">
+                    </form>
+                </td>
+                <td>
+                    <form method="POST" action="/delete_user/{{ user[0] }}">
+                        <button type="submit">Удалить </button>
+                    </form>
+                </td>
             </tr>
-        </thead>
-        <tbody>
-            {% for user in users %}
-                <tr>
-                    <td>{{ user[0] }}</td>
-                    <td>{{ user[1] }}</td>
-                    <td>{{ user[2] }}</td>
-                    <td>{{ user[3] }}</td>
-                    <td>{{ user[4] }}</td>
-                    <td>{{ user[5] }}</td>
-                    <td>
-                        <form method="POST" action="/update_balance/{{ user[0] }}">
-                            <input type="number" name="new_balance" step="0.01" required placeholder="Новая сумма" value="{{ user[5] }}">
-                            <button type="submit">Обновить</button>
-                        </form>
-                    </td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <a href="/">Назад на главную</a>
+        {% endfor %}
+    </tbody>
+</table>
+
 </body>
 </html>
