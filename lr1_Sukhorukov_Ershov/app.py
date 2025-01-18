@@ -9,16 +9,26 @@ db = Database()
 # Главная страница
 @app.route('/')
 def index():
+    return render_template('index.html', message="This project was built by Sukhorukov, Ershov")
+
+# Страница с пользователями
+@app.route('/users')
+def users():
     # Получение всех пользователей из базы данных
     users = db.cursor.execute("SELECT * FROM users").fetchall()
-    # Получение всех ставок из таблицы bets
+    return render_template('users.html', users=users)
+
+# Страница со ставками
+@app.route('/bets')
+def bets():
+    # Получение всех ставок из базы данных
     bets = db.cursor.execute("SELECT * FROM bets").fetchall()
-    return render_template('index.html', users=users, bets=bets, message="This project was build by Sukhorukov, Ershov")
+    return render_template('bets.html', bets=bets)
 
 # Пример API для получения статуса бота
 @app.route('/status')
 def status():
-    return jsonify({"status": "running"})
+    return render_template('status.html', message="ТГ бот запущен")
 
 # Получение всех пользователей из базы данных
 @app.route('/users', methods=['GET'])
