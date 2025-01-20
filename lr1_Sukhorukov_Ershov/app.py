@@ -1,38 +1,36 @@
 from flask import Flask, render_template, jsonify, request, redirect, url_for
 from threading import Thread
-from bot import run_bot  # Импортируем функцию run_bot из bot.py
+from bot import run_bot, send_admin_notification  # Импортируем функцию send_message из bot.py
 from database import Database
 
 app = Flask(__name__)
 db = Database()
 
+
 # Главная страница
 @app.route('/')
 def index():
-    # Получение всех пользователей из базы данных
-    users = db.cursor.execute("SELECT * FROM users").fetchall()
-    # Получение всех ставок из таблицы bets
-    bets = db.cursor.execute("SELECT * FROM bets").fetchall()
-    return render_template('index.html', users=users, bets=bets, message="This project was build by Sukhorukov, Ershov")
+    return render_template('index.html', message="This project was build by Sukhorukov, Ershov")
 
-# Пример API для получения статуса бота
+
+# Статус бота
 @app.route('/status')
 def status():
     return render_template('status.html', message="ТГ бот запущен")
 
-# Получение всех пользователей из базы данных
+
+# Получение всех пользователей
 @app.route('/users', methods=['GET'])
 def get_users():
-    users = db.cursor.execute("SELECT * FROM users").fetchall()
+    users = db.get_all_users()
     return render_template('users.html', users=users)
 
-# Получение всех ставок из базы данных
 @app.route('/bets', methods=['GET'])
 def get_bets():
     bets = db.cursor.execute("SELECT * FROM bets").fetchall()
     return render_template('bets.html', bets=bets)
 
-# Добавление пользователя в базу данных через Flask
+# Добавление нового пользователя
 @app.route('/add_user', methods=['POST'])
 def add_user():
     data = request.form
@@ -44,7 +42,8 @@ def add_user():
     if chat_id and username:
         db.save_user(chat_id, username, first_name, last_name)
         return redirect(url_for('get_users'))
-    return redirect(url_for('get_users'))  # Перенаправляем обратно, если данные неверные
+    return redirect(url_for('get_users'))
+
 
 # Обновление баланса пользователя
 @app.route('/update_balance/<int:user_id>', methods=['POST'])
@@ -53,19 +52,38 @@ def update_balance(user_id):
     if new_balance:
         db.cursor.execute("UPDATE users SET balance = ? WHERE id = ?", (new_balance, user_id))
         db.conn.commit()
-        return redirect(url_for('get_users'))  # После обновления баланса перенаправляем обратно на страницу пользователей
-    return redirect(url_for('get_users'))  # В случае ошибки также возвращаемся на страницу пользователей
+        return redirect(url_for('get_users'))
+    return redirect(url_for('get_users'))
+
 
 # Удаление пользователя
 @app.route('/delete_user/<int:user_id>', methods=['POST'])
 def delete_user(user_id):
     db.cursor.execute("DELETE FROM users WHERE id = ?", (user_id,))
     db.conn.commit()
-    return redirect(url_for('get_users'))  # После удаления перенаправляем на страницу пользователей
+    return redirect(url_for('get_users'))
+
+
+# Назначение роли администратора
+@app.route('/set_admin/<int:user_id>', methods=['POST'])
+def set_admin(user_id):
+    # Назначаем роль администратора пользователю
+    db.set_admin(user_id, is_admin=True)
+
+    # Получаем chat_id пользователя из базы данных
+    user = db.get_user(user_id)
+    if user:
+        chat_id = user[1]  # chat_id пользователя
+        # Отправляем уведомление пользователю через бота
+        send_admin_notification(chat_id)
+
+    return redirect(url_for('get_users'))  # Перенаправляем на страницу пользователей
+
 
 # Запуск Flask-приложения
 def start_flask():
     app.run(host='0.0.0.0', port=5000)
+
 
 # Запуск бота и Flask в отдельных потоках
 def main():
@@ -77,6 +95,7 @@ def main():
 
     thread1.join()
     thread2.join()
+
 
 if __name__ == "__main__":
     main()

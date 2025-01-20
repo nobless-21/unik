@@ -1,5 +1,6 @@
 import asyncio
 import random
+import requests
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 from database import Database
@@ -7,6 +8,23 @@ from database import Database
 # Токен вашего бота
 TELEGRAM_BOT_TOKEN = '7513564407:AAEFyyu8bW279JlIqpUFHkP2UI0TseUbpEA'
 
+
+# Функция отправки уведомления пользователю о новой роли (асинхронная версия)
+def send_admin_notification(chat_id):
+    message = "Поздравляем! Вы были назначены администратором."
+    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+    payload = {
+        'chat_id': chat_id,
+        'text': message
+    }
+
+    # Используем requests для отправления POST-запроса
+    response = requests.post(url, data=payload)
+
+    if response.status_code != 200:
+        print(f"Ошибка при отправке сообщения: {response.text}")
+    else:
+        print(f"Сообщение отправлено пользователю {chat_id}: {message}")
 
 # Команда /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -26,6 +44,28 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Нажмите на кнопку ниже, чтобы сделать ставку.",
         reply_markup=keyboard
     )
+    db.close()
+
+async def stat(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = update.message.chat_id
+    db = Database()
+
+    # Проверяем, является ли пользователь администратором
+    if not db.is_admin(chat_id):
+        await update.message.reply_text("У вас нет прав для выполнения этой команды.")
+        db.close()
+        return
+
+    # Получаем статистику
+    user_count = len(db.get_all_users())  # Получаем количество пользователей
+    bet_count = len(db.get_all_bets())    # Получаем количество ставок
+
+    # Формируем сообщение для админа
+    stat_message = f"Количество пользователей: {user_count}\nКоличество ставок: {bet_count}"
+
+    # Отправляем статистику администратору
+    await update.message.reply_text(stat_message)
+
     db.close()
 
 
@@ -52,7 +92,6 @@ async def handle_bet(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
-    # Извлечение коэффициента из callback_data
     coefficient = float(query.data.split("_")[1])
 
     keyboard = InlineKeyboardMarkup([
@@ -73,7 +112,6 @@ async def finalize_bet(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
-    # Извлечение данных из callback_data
     _, coefficient, amount = query.data.split("_")
     coefficient = float(coefficient)
     amount = int(amount)
@@ -81,14 +119,12 @@ async def finalize_bet(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = query.from_user.id
     db = Database()
 
-    # Проверка баланса
     balance = db.get_balance(chat_id)
     if balance < amount:
-        await query.edit_message_text("Недостаточно средств для ставки напишите команду /deposit и сумму пополнения.")
+        await query.edit_message_text("Недостаточно средств для ставки. Пополните баланс.")
         db.close()
         return
 
-    # Вероятность выигрыша (чем выше коэффициент, тем ниже вероятность)
     win_probability = 1 / coefficient
     is_win = random.random() < win_probability
 
@@ -108,25 +144,23 @@ async def finalize_bet(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     db.close()
 
+
 # Пополнение баланса
 async def deposit(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.message.chat_id
     db = Database()
 
     try:
-        # Проверяем, указал ли пользователь сумму
         if len(context.args) != 1:
-            await update.message.reply_text("Пожалуйста, укажите сумму для пополнения. Пример: /deposit 1000")
+            await update.message.reply_text("Укажите сумму для пополнения. Пример: /deposit 1000")
             return
 
-        # Проверяем, является ли сумма числом
         amount = int(context.args[0])
 
         if amount <= 0:
             await update.message.reply_text("Сумма должна быть больше 0.")
             return
 
-        # Пополняем баланс пользователя
         user = db.get_user(chat_id)
         if user:
             db.update_balance(chat_id, amount)
@@ -142,6 +176,22 @@ async def deposit(update: Update, context: ContextTypes.DEFAULT_TYPE):
         db.close()
 
 
+# Пример функции для назначения пользователя администратором
+async def set_admin(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = update.message.chat_id
+    db = Database()
+
+    # Присваиваем пользователю роль администратора
+    db.set_admin(chat_id, is_admin=True)
+
+    # Отправляем уведомление пользователю о новой роли
+    await send_admin_notification(chat_id)
+
+    await update.message.reply_text("Вы были назначены администратором.")
+
+    db.close()
+
+
 # Запуск бота
 def run_bot():
     loop = asyncio.new_event_loop()
@@ -149,15 +199,12 @@ def run_bot():
 
     application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
 
-    # Регистрация обработчиков
     application.add_handler(CommandHandler("start", start))
-    application.add_handler(CommandHandler("deposit", deposit))  # Новый обработчик
+    application.add_handler(CommandHandler("deposit", deposit))
     application.add_handler(CallbackQueryHandler(choose_bet, pattern="^choose_bet$"))
     application.add_handler(CallbackQueryHandler(handle_bet, pattern="^coef_"))
     application.add_handler(CallbackQueryHandler(finalize_bet, pattern="^bet_"))
+    application.add_handler(CommandHandler("set_admin", set_admin))  # Новый обработчик для назначения администратора
+    application.add_handler(CommandHandler("stat", stat))
 
-    # Запуск бота
     loop.run_until_complete(application.run_polling())
-
-
-

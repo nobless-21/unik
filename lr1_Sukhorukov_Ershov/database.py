@@ -7,6 +7,7 @@ class Database:
         self.cursor = self.conn.cursor()
         self.create_table()
         self.ensure_balance_column()
+        self.ensure_is_admin_column()  # Добавляем проверку на наличие столбца is_admin
 
     def create_table(self):
         """Создание таблицы пользователей в базе данных"""
@@ -16,7 +17,8 @@ class Database:
             username TEXT,
             first_name TEXT,
             last_name TEXT,
-            balance INTEGER DEFAULT 0
+            balance INTEGER DEFAULT 0,
+            is_admin INTEGER DEFAULT 0  -- Добавляем поле is_admin
         )''')
         self.conn.commit()
 
@@ -26,6 +28,22 @@ class Database:
         columns = [column[1] for column in self.cursor.fetchall()]
         if "balance" not in columns:
             self.cursor.execute("ALTER TABLE users ADD COLUMN balance INTEGER DEFAULT 0")
+            self.conn.commit()
+
+    def ensure_is_admin_column(self):
+        """Проверяем и добавляем колонку 'is_admin', если она отсутствует"""
+        self.cursor.execute("PRAGMA table_info(users)")
+        columns = [column[1] for column in self.cursor.fetchall()]
+        if "is_admin" not in columns:
+            self.cursor.execute("ALTER TABLE users ADD COLUMN is_admin INTEGER DEFAULT 0")
+            self.conn.commit()
+
+    def ensure_is_admin_column(self):
+        """Проверяем и добавляем колонку 'is_admin', если она отсутствует"""
+        self.cursor.execute("PRAGMA table_info(users)")
+        columns = [column[1] for column in self.cursor.fetchall()]
+        if "is_admin" not in columns:
+            self.cursor.execute("ALTER TABLE users ADD COLUMN is_admin INTEGER DEFAULT 0")
             self.conn.commit()
 
     def save_user(self, chat_id, username, first_name, last_name):
@@ -70,6 +88,12 @@ class Database:
         self.cursor.execute("SELECT * FROM users")
         return self.cursor.fetchall()
 
+    def get_all_bets(self):
+        # Assuming you are using SQLite or any other DB
+        # Replace with actual logic to fetch bets
+        self.cursor.execute("SELECT * FROM bets")  # Modify the SQL query as per your schema
+        return self.cursor.fetchall()
+
     def close(self):
         """Закрытие соединения с базой данных"""
         self.conn.close()
@@ -90,3 +114,15 @@ class Database:
             (chat_id, amount, coefficient, result)
         )
         self.conn.commit()
+
+    def set_admin(self, user_id, is_admin=True):
+        """Назначение пользователя администратором"""
+        self.cursor.execute("UPDATE users SET is_admin = ? WHERE id = ?", (1 if is_admin else 0, user_id))
+        self.conn.commit()
+
+    def is_admin(self, chat_id):
+        """Проверка, является ли пользователь администратором"""
+        self.cursor.execute("SELECT is_admin FROM users WHERE chat_id = ?", (chat_id,))
+        result = self.cursor.fetchone()
+        return result[0] == 1 if result else False
+

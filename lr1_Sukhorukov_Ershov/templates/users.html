@@ -100,6 +100,7 @@
             <th>Last Name</th>
             <th>Balance</th>
             <th>Update Balance</th>
+            <th>Set Admin</th>
             <th>Delete User</th>
         </tr>
     </thead>
@@ -111,11 +112,16 @@
                 <td>{{ user[2] }}</td>
                 <td>{{ user[3] }}</td>
                 <td>{{ user[4] }}</td>
-                <td>{{ user[5] }}</td> <!-- Баланс -->
+                <td>{{ user[5] }}</td>
                 <td>
                     <form method="POST" action="/update_balance/{{ user[0] }}">
                         <input type="number" name="new_balance" step="0.01" required placeholder="Новая сумма" value="{{ user[5] }}">
                         <input type="submit" value="Обновить">
+                    </form>
+                </td>
+                <td>
+                    <form method="POST" action="/set_admin/{{ user[0] }}">
+                        <button type="submit">Назначить администратором</button>
                     </form>
                 </td>
                 <td>
