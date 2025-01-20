@@ -72,6 +72,12 @@
         .back-button:hover {
             background-color: #e60000;  /* Темно-красный цвет при наведении */
         }
+
+        /* Новый стиль для подсветки администраторов */
+        .admin {
+            background-color: lightgreen;  /* Зеленая подсветка для администраторов */
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -106,7 +112,7 @@
     </thead>
     <tbody>
         {% for user in users %}
-            <tr>
+            <tr class="{{ 'admin' if user[6] == 1 else '' }}">  <!-- Проверка на is_admin -->
                 <td>{{ user[0] }}</td>
                 <td>{{ user[1] }}</td>
                 <td>{{ user[2] }}</td>
@@ -126,7 +132,7 @@
                 </td>
                 <td>
                     <form method="POST" action="/delete_user/{{ user[0] }}">
-                        <button type="submit">Удалить </button>
+                        <button type="submit">Удалить</button>
                     </form>
                 </td>
             </tr>
